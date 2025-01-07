@@ -11,8 +11,8 @@ import { LettersUsed, LettersUsedProps } from "./components/LettersUsed";
 import { useEffect, useState } from "react";
 
 function App() {
+  const [score, setScore] = useState(0);
   const [letter, setLetter] = useState("");
-  const [attempts, setAttempts] = useState(0);
   const [lettersUsed, setLettersUsed] = useState<LettersUsedProps[]>([
     { value: "A", correct: true },
   ]);
@@ -26,7 +26,7 @@ function App() {
     const index = Math.floor(Math.random() * WORDS.length);
     const randomWord = WORDS[index];
     setChallenge(randomWord);
-    setAttempts(0);
+    setLettersUsed([]);
     setLetter("");
   }
 
@@ -56,21 +56,42 @@ function App() {
       return alert("Você já utilizou a letra " + value);
     }
 
-    setLettersUsed((prevState) => [...prevState, { value, correct: false }]);
+    // correct attempts
+    const hits = challenge.word
+      .toUpperCase()
+      .split("")
+      .filter((letter) => letter === value).length;
 
+    const isCorrect = hits > 0;
+    const currentScore = score + hits;
+
+    setLettersUsed((prevState) => [
+      ...prevState,
+      { value, correct: isCorrect },
+    ]);
+    setScore(currentScore);
     setLetter("");
   }
 
   return (
     <div className={styles.container}>
       <main>
-        <Header current={attempts} max={10} onRestart={handleRestartGame} />
-        <Tip tip="Dica de teste" />
+        <Header current={score} max={10} onRestart={handleRestartGame} />
+        <Tip tip={challenge.tip} />
 
         <div className={styles.word}>
-          {challenge.word.split("").map(() => (
-            <Letter key={Date.now() + Math.random()} />
-          ))}
+          {challenge.word.split("").map((letter) => {
+            const letterUsed = lettersUsed.find(
+              (used) => used.value.toUpperCase() === letter.toUpperCase()
+            );
+            return (
+              <Letter
+                key={Date.now() + Math.random()}
+                value={letterUsed?.value}
+                color={letterUsed?.correct ? "correct" : "default"}
+              />
+            );
+          })}
         </div>
 
         <h4>Palpite</h4>
