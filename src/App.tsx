@@ -1,28 +1,53 @@
-import { Tip } from "./components/Tip";
 import styles from "./app.module.css";
 
+import { WORDS, Challenge } from "./utils/words";
+
+import { Tip } from "./components/Tip";
 import { Letter } from "./components/Letter";
 import { Header } from "./components/Header";
 import { Input } from "./components/Input";
 import { Button } from "./components/Button";
-import { LettersUsed } from "./components/LettersUsed";
+import { LettersUsed, LettersUsedProps } from "./components/LettersUsed";
+import { useEffect, useState } from "react";
 
 function App() {
+  const [letter, setLetter] = useState("");
+  const [attempts, setAttempts] = useState(0);
+  const [lettersUsed, setLettersUsed] = useState<LettersUsedProps[]>([
+    { value: "A", correct: true },
+  ]);
+  const [challenge, setChallenge] = useState<Challenge | null>(null);
+
   function handleRestartGame() {
     alert("Reiniciar o jogo!");
+  }
+
+  function startGame() {
+    const index = Math.floor(Math.random() * WORDS.length);
+    const randomWord = WORDS[index];
+    setChallenge(randomWord);
+    setAttempts(0);
+    setLetter("");
+  }
+
+  useEffect(() => {
+    startGame();
+  }, []);
+
+  if (!challenge) {
+    return <div>Carregando...</div>;
   }
 
   return (
     <div className={styles.container}>
       <main>
-        <Header current={5} max={10} onRestart={handleRestartGame} />
+        <Header current={attempts} max={10} onRestart={handleRestartGame} />
         <Tip tip="Dica de teste" />
+
         <div className={styles.word}>
-          <Letter value="R" />
-          <Letter value="E" />
-          <Letter value="A" />
-          <Letter value="C" />
-          <Letter value="T" />
+          {challenge.word.split("").map(() => (
+            <Letter key={Date.now() + Math.random()} />
+          ))}
         </div>
 
         <h4>Palpite</h4>
@@ -32,7 +57,7 @@ function App() {
           <Button title="Confirmar" />
         </div>
 
-        <LettersUsed />
+        <LettersUsed data={lettersUsed} />
       </main>
     </div>
   );
