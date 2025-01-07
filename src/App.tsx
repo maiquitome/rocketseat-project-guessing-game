@@ -15,9 +15,7 @@ const ATTEMPTS_MARGIN = 5;
 function App() {
   const [score, setScore] = useState(0);
   const [letter, setLetter] = useState("");
-  const [lettersUsed, setLettersUsed] = useState<LettersUsedProps[]>([
-    { value: "A", correct: true },
-  ]);
+  const [lettersUsed, setLettersUsed] = useState<LettersUsedProps[]>([]);
   const [challenge, setChallenge] = useState<Challenge | null>(null);
 
   function handleRestartGame() {
@@ -28,13 +26,40 @@ function App() {
     const index = Math.floor(Math.random() * WORDS.length);
     const randomWord = WORDS[index];
     setChallenge(randomWord);
-    setLettersUsed([]);
+
+    setScore(0);
     setLetter("");
+    setLettersUsed([]);
   }
 
   useEffect(() => {
     startGame();
   }, []);
+
+  useEffect(() => {
+    if (!challenge) {
+      return;
+    }
+
+    setTimeout(() => {
+      function endGame(message: string) {
+        alert(message);
+        startGame();
+      }
+
+      if (score === challenge.word.length) {
+        return endGame("Parabéns, você descobriu a palavra!");
+      }
+
+      const attemptLimit = challenge.word.length + ATTEMPTS_MARGIN;
+
+      console.log("attemptLimit", attemptLimit);
+
+      if (lettersUsed.length === attemptLimit) {
+        return endGame("Você perdeu! A palavra era " + challenge?.word);
+      }
+    }, 200);
+  }, [score, lettersUsed.length, challenge]);
 
   if (!challenge) {
     return <div>Carregando...</div>;
@@ -55,6 +80,7 @@ function App() {
     );
 
     if (letterAlreadyUsed) {
+      setLetter("");
       return alert("Você já utilizou a letra " + value);
     }
 
